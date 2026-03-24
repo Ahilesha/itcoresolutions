@@ -57,7 +57,8 @@ Route::middleware(['auth'])->group(function () {
     /**
      * NOTIFICATIONS
      */
-    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])
         ->name('notifications.markRead');
@@ -91,6 +92,22 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/materials/{material}', [MaterialController::class, 'update'])->name('materials.update')->middleware('permission:materials.update');
 
         Route::delete('/materials/{material}', [MaterialController::class, 'destroy'])->name('materials.destroy')->middleware('permission:materials.delete');
+
+        Route::post('/materials/{material}/stock/add', [MaterialStockController::class, 'add'])
+            ->name('materials.stock.add')
+            ->middleware('permission:materials.stock.add');
+
+        Route::get('/materials/{material}/components', [MaterialComponentController::class, 'index'])
+            ->name('materials.components.index')
+            ->middleware('permission:materials.composite.manage');
+
+        Route::post('/materials/{material}/components', [MaterialComponentController::class, 'store'])
+            ->name('materials.components.store')
+            ->middleware('permission:materials.composite.manage');
+
+        Route::delete('/materials/{material}/components/{component}', [MaterialComponentController::class, 'destroy'])
+            ->name('materials.components.destroy')
+            ->middleware('permission:materials.composite.manage');
     });
 
     /**
@@ -108,13 +125,24 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update')->middleware('permission:products.update');
 
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy')->middleware('permission:products.delete');
+
+        Route::get('/products/{product}/bom', [ProductBomController::class, 'index'])
+            ->name('products.bom.index')
+            ->middleware('permission:products.bom.manage');
+
+        Route::post('/products/{product}/bom', [ProductBomController::class, 'store'])
+            ->name('products.bom.store')
+            ->middleware('permission:products.bom.manage');
+
+        Route::delete('/products/{product}/bom/{materialId}', [ProductBomController::class, 'destroy'])
+            ->name('products.bom.destroy')
+            ->middleware('permission:products.bom.manage');
     });
 
     /**
      * ORDERS
      */
     Route::middleware(['permission:orders.view'])->group(function () {
-
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
 
         Route::get('/orders/create', [OrderController::class, 'create'])
@@ -133,7 +161,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('orders.cancel')
             ->middleware('permission:orders.update_status');
 
-        // ✅ FIXED HERE
         Route::post('/orders/{order}/undo-cancel', [OrderController::class, 'undoCancel'])
             ->name('orders.undoCancel')
             ->middleware('permission:orders.update_status');
@@ -144,6 +171,14 @@ Route::middleware(['auth'])->group(function () {
      */
     Route::middleware(['permission:reports.view'])->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+        Route::post('/reports/generate-now', [ReportController::class, 'generateNow'])
+            ->name('reports.generateNow')
+            ->middleware('permission:reports.generate');
+
+        Route::get('/reports/{report}/download', [ReportController::class, 'download'])
+            ->name('reports.download')
+            ->middleware('permission:reports.download');
     });
 
     /**
@@ -151,6 +186,11 @@ Route::middleware(['auth'])->group(function () {
      */
     Route::middleware(['permission:suppliers.view'])->group(function () {
         Route::get('/suppliers', [SupplierController::class, 'index'])->name('suppliers.index');
+        Route::get('/suppliers/create', [SupplierController::class, 'create'])->name('suppliers.create')->middleware('permission:suppliers.create');
+        Route::post('/suppliers', [SupplierController::class, 'store'])->name('suppliers.store')->middleware('permission:suppliers.create');
+        Route::get('/suppliers/{supplier}/edit', [SupplierController::class, 'edit'])->name('suppliers.edit')->middleware('permission:suppliers.update');
+        Route::put('/suppliers/{supplier}', [SupplierController::class, 'update'])->name('suppliers.update')->middleware('permission:suppliers.update');
+        Route::delete('/suppliers/{supplier}', [SupplierController::class, 'destroy'])->name('suppliers.destroy')->middleware('permission:suppliers.delete');
     });
 
     /**
@@ -158,6 +198,10 @@ Route::middleware(['auth'])->group(function () {
      */
     Route::middleware(['permission:purchases.view'])->group(function () {
         Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
+        Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create')->middleware('permission:purchases.create');
+        Route::post('/purchases', [PurchaseController::class, 'store'])->name('purchases.store')->middleware('permission:purchases.create');
+        Route::get('/purchases/{purchase}', [PurchaseController::class, 'show'])->name('purchases.show');
+        Route::delete('/purchases/{purchase}', [PurchaseController::class, 'destroy'])->name('purchases.destroy')->middleware('permission:purchases.delete');
     });
 
     /**
@@ -165,20 +209,73 @@ Route::middleware(['auth'])->group(function () {
      */
     Route::middleware(['permission:employees.view'])->group(function () {
         Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::get('/employees/create', [EmployeeController::class, 'create'])->name('employees.create')->middleware('permission:employees.create');
+        Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store')->middleware('permission:employees.create');
+        Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])->name('employees.edit')->middleware('permission:employees.update');
+        Route::put('/employees/{employee}', [EmployeeController::class, 'update'])->name('employees.update')->middleware('permission:employees.update');
+        Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy'])->name('employees.destroy')->middleware('permission:employees.delete');
     });
 
     /**
      * ATTENDANCE
      */
+    Route::get('/attendance/punch', [AttendanceController::class, 'punch'])
+        ->name('attendance.punch')
+        ->middleware('permission:attendance.punch');
+
+    Route::post('/attendance/punch-in', [AttendanceController::class, 'punchIn'])
+        ->name('attendance.punchIn')
+        ->middleware('permission:attendance.punch');
+
+    Route::post('/attendance/punch-out', [AttendanceController::class, 'punchOut'])
+        ->name('attendance.punchOut')
+        ->middleware('permission:attendance.punch');
+
     Route::get('/attendance', [AttendanceController::class, 'index'])
         ->name('attendance.index')
         ->middleware('permission:attendance.view');
 
     /**
-     * PREDICTIONS
+     * PREDICTIONS MODULE
      */
     Route::get('/predictions', [PredictionController::class, 'index'])
         ->name('predictions.index')
         ->middleware('permission:orders.view');
 
+    /**
+     * USER MANAGEMENT (Super Admin only)
+     */
+    Route::middleware(['role:Super Admin'])->prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserManagementController::class, 'index'])
+            ->name('index')
+            ->middleware('permission:users.view');
+
+        Route::get('/create', [UserManagementController::class, 'create'])
+            ->name('create')
+            ->middleware('permission:users.create');
+
+        Route::post('/', [UserManagementController::class, 'store'])
+            ->name('store')
+            ->middleware('permission:users.create');
+
+        Route::get('/{user}/edit', [UserManagementController::class, 'edit'])
+            ->name('edit')
+            ->middleware('permission:users.update');
+
+        Route::put('/{user}', [UserManagementController::class, 'update'])
+            ->name('update')
+            ->middleware('permission:users.update');
+
+        Route::delete('/{user}', [UserManagementController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('permission:users.delete');
+
+        Route::get('/transfer-ownership', [UserManagementController::class, 'transferOwnershipForm'])
+            ->name('transferOwnershipForm')
+            ->middleware('permission:users.transfer_ownership');
+
+        Route::post('/transfer-ownership', [UserManagementController::class, 'transferOwnership'])
+            ->name('transferOwnership')
+            ->middleware('permission:users.transfer_ownership');
+    });
 });
