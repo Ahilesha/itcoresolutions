@@ -161,6 +161,7 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:orders.update_status');
         Route::post('/orders/{order}/undo-cancel', [OrderController::class, 'undoCancel'])
             ->name('orders.undoCancel');
+            ->middleware('permission:orders.update_status');
             });
 
     /**
