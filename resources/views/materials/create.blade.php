@@ -56,7 +56,7 @@
                             <input id="is_composite" name="is_composite" type="checkbox" value="1" class="rounded border-gray-300"
                                    {{ old('is_composite') ? 'checked' : '' }}>
                             <label for="is_composite" class="text-sm text-gray-700">
-                                This material is composite (children will be configured in Phase 5)
+                                This material is composite
                             </label>
                         </div>
 
