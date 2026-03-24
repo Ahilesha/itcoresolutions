@@ -103,6 +103,7 @@
                                                 {{ $o->status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' : '' }}
                                                 {{ $o->status === 'Completed' ? 'bg-green-100 text-green-800' : '' }}
                                                 {{ $o->status === 'Dispatched' ? 'bg-purple-100 text-purple-800' : '' }}
+                                                {{ $o->status === 'Cancelled' ? 'bg-red-100 text-red-800' : '' }}
                                             ">
                                                 {{ $o->status }}
                                             </span>
