@@ -22,7 +22,7 @@ class OrderController extends Controller
         $query = Order::with(['user', 'items.product'])->orderByDesc('placed_at');
 
         // Filter by status
-        $allowedStatuses = ['Received', 'In Progress', 'Completed', 'Dispatched'];
+        $allowedStatuses = ['Received', 'In Progress', 'Completed', 'Dispatched', 'Cancelled'];
         if ($status && in_array($status, $allowedStatuses, true)) {
             $query->where('status', $status);
         }
